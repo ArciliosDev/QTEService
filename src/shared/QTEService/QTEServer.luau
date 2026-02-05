@@ -14,6 +14,8 @@ type QTEObject = {
 	EventId: string,
 	Remote: RemoteEvent,
 	finishedEvent: BindableEvent,
+	ForcedButton: Enum.KeyCode,
+
 	Start: (QTEObject) -> (),
 	Resolve: (QTEObject) -> (),
 	CleanUp: (QTEObject) -> (),
@@ -42,6 +44,7 @@ type EventSettings = {
 	PlayerTwo: Player?,
 	Type: "Reflex" | "Timing",
 	Duration: number,
+	ForcedButton: Enum.KeyCode?,
 }
 
 local activeEvents: EventsTable = {}
@@ -90,6 +93,7 @@ function QTE.new(settings: EventSettings): QTEObject
 	self.Duration = settings.Duration
 	self.EventId = HttpService:GenerateGUID(false)
 	self.Remote = script.Parent.Parent:WaitForChild("QTERemote")
+	self.ForcedButton = settings.ForcedButton
 
 	self.Trove = Trove.new()
 	self.finishedEvent = self.Trove:Add(Instance.new("BindableEvent"))
@@ -120,7 +124,7 @@ function QTE:Start()
 		duration = self.Duration,
 		result = nil,
 	}
-	self.Remote:FireClient(self.Player1, self.Type, self.Duration, self.EventId)
+	self.Remote:FireClient(self.Player1, self.Type, self.Duration, self.EventId, self.ForcedButton)
 
 	if self.Player2 then
 		eventTable[self.Player2] = {
@@ -128,7 +132,7 @@ function QTE:Start()
 			duration = self.Duration,
 			result = nil,
 		}
-		self.Remote:FireClient(self.Player2, self.Type, self.Duration, self.EventId)
+		self.Remote:FireClient(self.Player2, self.Type, self.Duration, self.EventId, self.ForcedButton)
 	end
 
 	self.Trove:Add(function()
@@ -187,9 +191,9 @@ function QTE.Resolve(self: QTEObject)
 
 	self.finishedEvent:Fire(winner)
 
-	self.Remote:FireClient(self.Player1, "End")
+	self.Remote:FireClient(self.Player1, "End", nil, self.EventId)
 	if self.Player2 then
-		self.Remote:FireClient(self.Player2, "End")
+		self.Remote:FireClient(self.Player2, "End", nil, self.EventId)
 	end
 end
 

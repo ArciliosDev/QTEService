@@ -13,6 +13,7 @@ Players.PlayerAdded:Connect(function()
 			PlayerTwo = Players:GetPlayers()[2],
 			Type = "Reflex",
 			Duration = 10,
+			ForcedButton = Enum.KeyCode.L,
 		})
 
 		test:Start()

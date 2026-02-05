@@ -101,6 +101,7 @@ function QTE.init()
 	QTERemote.OnClientEvent:Connect(
 		function(Type: string, Duration: number, EventId: string, buttonToPress: Enum.KeyCode?)
 			if Type == "End" then
+				warn("Fired with type: ", Type, " active troves: ", activeTroves)
 				if activeTroves[EventId] then
 					activeTroves[EventId]:Destroy()
 				end
