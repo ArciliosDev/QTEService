@@ -12,10 +12,13 @@ type QTEObject = {
 	Type: string,
 	Duration: number,
 	EventId: string,
-
+	Remote: RemoteEvent,
+	finishedEvent: BindableEvent,
 	Start: (QTEObject) -> (),
 	Resolve: (QTEObject) -> (),
 	CleanUp: (QTEObject) -> (),
+	_ResolveReflex: (QTEObject) -> Player | nil,
+	_ResolveTiming: (QTEObject) -> (),
 }
 
 type PlayerEntry = {
@@ -50,11 +53,7 @@ function QTE.init()
 
 	QTERemote.OnServerEvent:Connect(function(player: Player, eventId: string)
 		local event = activeEvents[eventId]
-		if not event then
-			return
-		end
-
-		if event.finished then
+		if not event or event.finished then
 			return
 		end
 
@@ -173,19 +172,25 @@ end
 
 function QTE:_ResolveTiming() end
 
-function QTE:Resolve()
+function QTE.Resolve(self: QTEObject)
 	local eventTable = activeEvents[self.EventId]
 	if not eventTable then
 		return
 	end
 
-	local winner
+	local winner: Player | nil
 	if self.Type == "Reflex" then
 		winner = self:_ResolveReflex()
 	elseif self.Type == "Timing" then
 		winner = self:_ResolveTiming()
 	end
+
 	self.finishedEvent:Fire(winner)
+
+	self.Remote:FireClient(self.Player1, "End")
+	if self.Player2 then
+		self.Remote:FireClient(self.Player2, "End")
+	end
 end
 
 function QTE:Await()

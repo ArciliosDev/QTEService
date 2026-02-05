@@ -8,6 +8,7 @@ QTE.__index = QTE
 
 local random = Random.new()
 local localPlayer = Players.LocalPlayer
+local activeTroves = {}
 
 local possibleReflexOptions = {
 	PC = {
@@ -36,7 +37,11 @@ type QTEObject = {
 	EventId: string,
 	Type: string,
 	Button: Enum.KeyCode?,
+	Trove: any,
+	Remote: RemoteEvent,
 	Platform: "PC" | "Console" | "Mobile",
+	RenderTiming: (QTEObject) -> (),
+	RenderReflex: (QTEObject) -> (),
 }
 
 local function vibrate(btnObject: Frame) end
@@ -95,6 +100,13 @@ function QTE.init()
 
 	QTERemote.OnClientEvent:Connect(
 		function(Type: string, Duration: number, EventId: string, buttonToPress: Enum.KeyCode?)
+			if Type == "End" then
+				if activeTroves[EventId] then
+					activeTroves[EventId]:Destroy()
+				end
+				return
+			end
+
 			local newQTE = QTE.new(Type, Duration, EventId, buttonToPress)
 			newQTE:Render()
 		end
@@ -105,11 +117,17 @@ end
 
 function QTE.new(eventType: string, duration: number, eventId: string, buttonToPress: Enum.KeyCode?): QTEObject
 	local self = setmetatable({}, QTE)
+
 	self.Duration = duration
 	self.Type = eventType
 	self.EventId = eventId
 	self.Button = buttonToPress
 	self.Trove = Trove.new()
+
+	activeTroves[eventId] = self.Trove
+	self.Trove:Add(function()
+		activeTroves[eventId] = nil
+	end)
 
 	self.Platform = if UserInputService.TouchEnabled
 		then "Mobile"
@@ -124,7 +142,7 @@ function QTE.new(eventType: string, duration: number, eventId: string, buttonToP
 	return self
 end
 
-function QTE:RenderReflex()
+function QTE.RenderReflex(self: QTEObject)
 	local buttonSelected = self.Button
 	if self.Platform ~= "Mobile" and not buttonSelected then
 		local len = #possibleReflexOptions[self.Platform]
@@ -155,9 +173,7 @@ end
 
 function QTE:RenderTiming() end
 
-function QTE:Render()
-	self = self :: QTEObject
-
+function QTE.Render(self: QTEObject)
 	local playerGui = localPlayer:FindFirstChild("PlayerGui")
 	local QTEGui = playerGui:FindFirstChild("QTEGui")
 	if not QTEGui then
