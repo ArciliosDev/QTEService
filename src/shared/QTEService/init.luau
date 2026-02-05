@@ -1,7 +1,16 @@
-local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
-if RunService:IsServer() then
-	return require(script.Server)
-else
-	return require(script.Client)
+local QTEServer = require(script.QTEServer)
+QTEServer.init()
+
+local function injectClient(player: Player): ()
+	local clientBootStrapper = script.ClientBootstrapper:Clone()
+	clientBootStrapper.Enabled = false
+
+	clientBootStrapper.Parent = player:WaitForChild("PlayerGui")
+	clientBootStrapper.Enabled = true
 end
+
+Players.PlayerAdded:Connect(injectClient)
+
+return QTEServer
