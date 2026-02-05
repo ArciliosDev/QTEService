@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local QTEService = require(ReplicatedStorage.Shared.QTEService)
 
-Players.PlayerAdded:Connect(function(player: Player)
+Players.PlayerAdded:Connect(function()
 	local totalPlayers = #Players:GetPlayers()
 	if totalPlayers >= 2 then
 		warn("Starting QTE 2 players are in game")
