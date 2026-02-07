@@ -142,7 +142,7 @@ function QTE:Start()
 	end)
 end
 
-function QTE:_ResolveReflex(): Player | nil
+function QTE:_ResolveReflex(): Player?
 	print("Resolve reflex called")
 	local eventTable = activeEvents[self.EventId]
 	if not eventTable then
@@ -182,7 +182,7 @@ function QTE.Resolve(self: QTEObject)
 		return
 	end
 
-	local winner: Player | nil
+	local winner: Player?
 	if self.Type == "Reflex" then
 		winner = self:_ResolveReflex()
 	elseif self.Type == "Timing" then
